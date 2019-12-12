@@ -1,0 +1,47 @@
+﻿
+ <NTag TagId="table" TModel="WeatherForecast" Context="tbl">
+    <table>
+        <thead>
+            <tr>
+                <NTag Text="<th >#</th>"
+                      TextVisibility="NVisibility.Markup"
+                      ShowContent="false"
+                      Getter="tbl.GetGetter((m,a)=>a)"
+                      Context="arg">
+                    <td>@arg.Value</td>
+                </NTag>
+                <NTag Text="<th>Summary</th>"
+                      TextVisibility="NVisibility.Markup"
+                      ShowContent="false"
+                      Getter="tbl.GetGetter((m, a) => m.Summary)"/>
+                <NTag Text="<th>Date</th>"
+                      TextVisibility="NVisibility.Markup"
+                      ShowContent="false"
+                      Getter="tbl.GetGetter((m, a) => m.Date)"
+                      />
+            </tr>
+        </thead>
+        <tbody>
+            <CascadingValue Value="default(object)">
+                @{
+                    var i = 0;
+                    foreach (var o in Source)
+                    {
+                    <tr @key="o">
+                        @tbl.Tag.RenderChildren(o, i++)
+                    </tr>
+
+                    }
+                    }
+            </CascadingValue>
+
+        </tbody>
+    </table>
+</NTag> 
+
+@code {
+
+    IEnumerable<WeatherForecast> Source = Enumerable.Range(0, 10)
+        .Select(i => new WeatherForecast { Date=DateTime.Now,Summary=$"data_{i}", TemperatureC=i });
+
+}

@@ -1,0 +1,23 @@
+﻿
+@typeparam TModel
+@inherits AbstractNTag<NTag<TModel>, RenderArgs<NTag<TModel>, TModel>, TModel>
+    <CascadingValue Value="this">
+        @RenderText()
+        @if (this.ShowContent)
+        {
+            var render = RenderContent();
+            if (render == null)
+            {
+                <div>@this</div>//测试用
+            }
+            else
+            {
+                @render//render 是个函数，使用@才能输出，如果不考虑测试代码，可以直接 @RenderContent()
+            }
+             
+        }
+    </CascadingValue> 
+
+@code {
+
+}

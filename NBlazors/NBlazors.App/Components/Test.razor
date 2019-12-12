@@ -1,0 +1,123 @@
+﻿<h3>NTag测试 </h3>
+1、未打开的NTag,输出NTag.ToString():
+<br />
+  a)泛型通过TModel直接指定 TModel="object"，
+<NTag TModel="object" />
+  b)指定Model值,推导出TModel Model="(object)null"
+<NTag Model="(object)null" />
+2、打开的NTag,Model="TestData",使用Context="args" 捕获参数
+<NTag Model="TestData" Context="args">
+    <div>NTag内容 args.Model.Summary:@args.Model.Summary  </div>
+</NTag>
+3、使用匿名对象 new {Name="匿名对象" } 作为Model：
+<NTag Model="@(new {Name="匿名对象" })" Context="args">
+    <div> 【Name】属性: @args.Model.Name</div>
+</NTag>
+4、设置Style background-color:aqua;height:50px; width:100px;
+<NTag TModel="object" Style="background-color:aqua;height:50px; width:100px;" Context="args">
+    <div style="@args.Tag.Style"></div>
+</NTag>
+5、customAttibutes:1、收集到组件的 CustomAttributes 字典中；2、使用@@attributes 将CustomAttributes输出。
+<NTag Model="@("customAttributes")" prop1="aaa" prop2="123" type="text" value="456" Context="args">
+    <div> <input @attributes="@args.Tag.CustomAttributes" />  </div>
+</NTag>
+
+6、借助CascadingValue 给Theme和Parent赋值
+<CascadingValue Value="Theme.Default">
+
+    <NTag Model="0" TagId="root" Context="root">
+        <div>root.Parent:@root.Tag.Parent  </div>
+        <div>root Theme:@root.Tag.Theme</div>
+        @* <CascadingValue Value="root.Tag">*@
+        <NTag TagId="t1" Model="1" Context="t1">
+            <div>t1.Parent：@t1.Tag.Parent  </div>
+            <div>t1 Theme:@t1.Tag.Theme</div>
+            <NTag TagId="t1_1" Model="2" Context="t1_1">
+                <div>t1_1.Parent：@t1_1.Tag.Parent  </div>
+                <div>t1_1 Theme：@t1_1.Tag.Theme </div>
+                <NTag TagId="t1_1_1" Model="3" Context="t1_1_1">
+                    <div>t1_1_1.Parent：@t1_1_1.Tag.Parent </div>
+                    <div>t1_1_1 Theme：@t1_1_1.Tag.Theme </div>
+                </NTag>
+                <NTag TagId="t1_1_2" Model="3" Context="t1_1_2">
+                    <div>t1_1_2.Parent：@t1_1_2.Tag.Parent</div>
+                    <div>t1_1_2 Theme：@t1_1_2.Tag.Theme </div>
+                </NTag>
+            </NTag>
+        </NTag>
+        @*  </CascadingValue> *@
+    </NTag>
+
+</CascadingValue>
+
+7、呈现Model
+<br />
+value:@@arg.Tag.Getter(arg.Model,null)
+<br />
+<NTag Text="日期" Model="TestData" Getter="(m,arg)=>m.Date" Context="arg">
+    <input type="datetime" value="@arg.Tag.Getter(arg.Model,null)" />
+</NTag>
+<br />
+Text中使用Markup：value:@@((DateTime)arg.Tag.Getter(arg.Model, null))
+<br />
+<label>
+    <NTag Text="<span style='color:red;'>日期</span>" TextVisibility="NVisibility.Markup" Model="TestData" Getter="(m,a)=>m.Date" Context="arg">
+        <input type="datetime" value="@((DateTime)arg.Tag.Getter(arg.Model,null))" />
+    </NTag>
+</label>
+<br />
+也可以直接使用childcontent：value:@@arg.Model.Date
+<div>
+    <NTag Model="TestData" Getter="(m,a)=>m.Date" Context="arg">
+        <label> <span style='color:red;'>日期</span> <input type="datetime" value="@arg.Model.Date" /></label>
+    </NTag>
+</div>
+getter 格式化:@@((m,a)=>m.Date.ToString("yyyy-MM-dd"))
+<div>
+    <NTag Model="TestData" Getter="@((m,a)=>m.Date.ToString("yyyy-MM-dd"))" Context="arg">
+        <label> <span style='color:red;'>日期</span> <input type="datetime" value="@arg.Tag.Getter(arg.Model,null)" /></label>
+    </NTag>
+</div>
+使用customAttributes ，借助外部方法推断TModel类型
+<div>
+    <NTag type="datetime" Getter="@GetGetter(TestData,(m,a)=>m.Date)" Context="arg">
+        <label> <span style='color:red;'>日期</span> <input @attributes="arg.Tag.CustomAttributes" value="@arg.Tag.Getter(arg.Model,null)" /></label>
+    </NTag>
+</div>
+
+简化参数取值 value:@@arg.Value
+<br />
+<NTag Getter="this.GetGetter(TestData,(m,a)=>m.Date)" Context="arg">
+    <label> <span style='color:red;'>日期</span> <input @attributes="arg.Tag.CustomAttributes" value="@arg.Value" /></label>
+</NTag>
+<br/>
+
+8、简单集合
+<ul>
+    @foreach (var o in this.Datas)
+    {
+        <NTag Model="o" Getter="(m,a)=>m.Summary" Context="arg">
+            <li @key="o">@arg.Value</li>
+        </NTag>
+    }
+</ul>
+
+9、Table
+<table>
+    <thead></thead>
+    <tbody></tbody>
+</table>
+
+
+
+@code {
+    WeatherForecast TestData = new WeatherForecast { TemperatureC = 222, Date = DateTime.Now, Summary = "test summary" };
+    IEnumerable<WeatherForecast> Datas = Enumerable.Range(0, 10)
+        .Select(i => new WeatherForecast { Summary = i + "" });
+    Func<T, object, object> GetGetter<T>(T model, Func<T, object, object> func)
+    {
+        return (m, a) => func(model, a);
+    }
+}
+
+
